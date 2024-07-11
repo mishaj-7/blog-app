@@ -1,0 +1,7 @@
+# Ignore node_modules folders
+/server/node_modules/
+/client/node_modules/
+
+# Ignore .env files
+/server/.env
+/client/.env
