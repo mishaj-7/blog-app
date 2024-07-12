@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import logo from "../imgs/logo.png";
 import { useState } from "react";
 
@@ -7,6 +7,7 @@ const NavBar = () => {
   console.log(searchBoxVisibility);
 
   return (
+    <>
     <nav className="navbar">
       <Link to="/" className="flex-none w-10">
         <img src={logo} className="flex-none w-10" />
@@ -14,8 +15,8 @@ const NavBar = () => {
 
       <div
         className={
-          "absolute bg-white w-full left-0 top-full mt-0.5 border-b border-grey py-4 px-[5vw] md:border-0 md:block md:relative md:inset-0 md:p-0 md:w-auto md:show" +
-          (searchBoxVisibility ? "show " : "hide hidden")
+          "absolute bg-white w-full left-0 top-full mt-0.5 border-b border-grey py-4 px-[5vw] md:border-0 md:block md:relative md:inset-0 md:p-0 md:w-auto md:show " +
+          (searchBoxVisibility ? "show" : "hide")
         }
       >
         <input
@@ -39,16 +40,20 @@ const NavBar = () => {
           <p>write</p>
         </Link>
 
-        <Link className="btn-dark py-2" to="/singin">
+        <Link className="btn-dark py-2" to="/signin">
           Sign In
         </Link>
-        <Link className="btn-light py-2 hidden md:block" to="/singup">
+        <Link className="btn-light py-2 hidden md:block" to="/signup">
           Sing Up
         </Link>
 
       </div>
-      
+
     </nav>
+
+    <Outlet />
+
+    </>
   );
 };
 
