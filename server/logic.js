@@ -1,3 +1,8 @@
+import crypto from 'crypto'
+
+export const  jwtString = crypto.randomBytes(64).toString('hex');
+console.log(jwtString);
+
 let profile_imgs_name_list = [
   "Garfield",
   "Tinkerbell",
