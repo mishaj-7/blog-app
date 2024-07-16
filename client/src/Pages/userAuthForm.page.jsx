@@ -1,13 +1,73 @@
+import { useRef } from "react";
 import { Link } from "react-router-dom";
 import InputBox from "../components/input.component";
 import googleIcon from "../imgs/google.png";
 import AnimationWrapper from "../common/page-animation";
+import {toast, Toaster} from 'react-hot-toast';
+import axios from 'axios'
+
 
 const UserAuthForm = ({ type }) => {
+
+  
+
+  const userAuthThroughServer = (serverRoute, formData) => {
+
+    axios.post(import.meta.env.VITE_SERVER_DOMAIN + serverRoute, formData)
+    .then(({data}) => {
+      console.log(data)
+    })
+    .catch(({response}) => {
+      toast.error(response.data.error)
+    })
+
+  }
+
+  const handleSubmit = (e) => {
+
+    e.preventDefault();
+
+    let serverRoute = type == "sign-in" ? "/signin" : "/signup";
+
+    let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
+
+    // formData
+
+    let form = new FormData(formElement);
+    let formData = {};
+
+    for(let [key, value] of form.entries()){
+      formData[key] = value;
+    }
+
+    let { fullname, email, password} = formData;
+    console.log(formData);
+
+    // form validation
+
+    if(fullname){
+      if(fullname.length <3 ){
+        return toast.error("Fullname must be more thatn 3 letters long");
+      }
+    }
+    if(!emailRegex.test(email)){
+      return toast.error("Email is invalid")
+    }
+    if(!passwordRegex.test(password)){
+      return toast.error("password should 6 20 char long with 1 numeric and 1 uppercase")
+    }
+
+    userAuthThroughServer(serverRoute, formData);
+
+  }
+
+
   return (
     <AnimationWrapper keyValue={type}>
       <section className="h-cover flex items-center justify-center">
-        <form className="w-[80] max-w-[400px] ">
+        <Toaster />
+        <form id="formElement" className="w-[80] max-w-[400px] ">
           <h1 className="text-4xl font-gelasio capitalize text-center mb-24">
             {type == "sign-in" ? "Welcom Back" : "join us today"}
           </h1>
@@ -36,7 +96,11 @@ const UserAuthForm = ({ type }) => {
             icon="fi-rr-key"
           />
 
-          <button className="btn-dark center mt-14" type="submit">
+          <button 
+          className="btn-dark center mt-14" 
+          type="submit"
+          onClick={handleSubmit}
+          >
             {type.replace("-", " ")}
           </button>
 
