@@ -5,3 +5,8 @@
 # Ignore .env files
 /server/.env
 /client/.env
+# ingonore server json files which for authenticate from google
+
+#google auth data
+
+server/blog-app-da5d9-firebase-adminsdk-grm7u-c8b64fd3eb.json

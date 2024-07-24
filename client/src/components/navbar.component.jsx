@@ -20,7 +20,7 @@ const NavBar = () => {
   const handleBlur = () => {
     setTimeout(() =>  {
       setUserNavPanel(false);
-    }, 100)  // when click inside it also outof focus so there is no link to redirect when give 200ms delay it has the link to redirect  if it make any issue choose useEffect hook to achive it 
+    }, 200)  // when click inside it also outof focus so there is no link to redirect when give 200ms delay it has the link to redirect  if it make any issue choose useEffect hook to achive it 
   }
 
   return (
