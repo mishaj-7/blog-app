@@ -4,6 +4,8 @@ import logo from "../imgs/logo.png";
 import { UserContext } from "../App";
 import UserNavigationPanel from './user-navigation.component'
 
+
+
 const NavBar = () => {
   const [searchBoxVisibility, setSearchBoxVisibility] = useState(false);
   const [userNavPanel, setUserNavPanel] = useState(false);
