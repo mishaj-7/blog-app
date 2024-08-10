@@ -40,6 +40,20 @@ const s3 = new aws.S3({
 
 });
 
+const generateUploadURL = async() => {
+
+  const date = new Date();
+  const imageName = `${nanoid()}-${date.getTime()}.jpeg`;
+
+ return await s3.getSignedUrlPromise('putObject',{
+    Bucket: 'blog-app-mern',
+    Key: imageName,
+    Expires: 1000,
+    ContentType: "image/jpeg"
+  })
+
+}
+
 const formatDatatoSend = (user) => {
   const acess_token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY);
 
@@ -64,6 +78,16 @@ const generateUsername = async (email) => {
 
   return username;
 };
+
+// upload image url route
+server.get('/get-uplaod-url', (req, res) => {
+  generateUploadURL()
+  .then(url => res.status(200).json({uplaodURL: url}))
+  .catch(err => {
+    console.log(err.message);
+    return res.status(500).json({error:err.message});
+  });
+})
 
 server.post("/signup", (req, res) => {
   let { fullname, email, password } = req.body;
