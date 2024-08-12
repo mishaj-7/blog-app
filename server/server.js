@@ -34,7 +34,7 @@ mongoose.connect(process.env.DB_LOCATION, {
 
 // setting up s3 bucket 
 const s3 = new aws.S3({
-  region:'ap-southeast-2',
+  region:'ap-south-1',
   accessKeyId: process.env.AWS_ACCESS_KEY,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 
@@ -46,13 +46,13 @@ const generateUploadURL = async() => {
   const imageName = `${nanoid()}-${date.getTime()}.jpeg`;
 
  return await s3.getSignedUrlPromise('putObject',{
-    Bucket: 'blog-app-mern',
+    Bucket: 'blog-app-fullstack',
     Key: imageName,
     Expires: 1000,
     ContentType: "image/jpeg"
   })
 
-}
+};
 
 const formatDatatoSend = (user) => {
   const acess_token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY);
@@ -80,9 +80,9 @@ const generateUsername = async (email) => {
 };
 
 // upload image url route
-server.get('/get-uplaod-url', (req, res) => {
+server.get('/get-upload-url', (req, res) => {
   generateUploadURL()
-  .then(url => res.status(200).json({uplaodURL: url}))
+  .then(url => res.status(200).json({uploadURL: url}))
   .catch(err => {
     console.log(err.message);
     return res.status(500).json({error:err.message});
