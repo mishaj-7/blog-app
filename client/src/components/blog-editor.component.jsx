@@ -6,24 +6,31 @@ import defaultBanner from "../imgs/blog banner.png";
 import { uploadImage } from "../common/aws";
 import { toast, Toaster } from "react-hot-toast";
 import { EditorContext } from "../Pages/editor.pages";
-import  EditorJs  from '@editorjs/editorjs';
-import {tools} from './tools.component'
+import EditorJs from "@editorjs/editorjs";
+import { tools } from "./tools.component";
 
 const BlogEditor = () => {
-
-  let { blog, blog: {title, banner, content, tags, des}, setBlog } = useContext(EditorContext);
+  let {
+    blog,
+    blog: { title, banner, content, tags, des },
+    setBlog,
+    textEditor,
+    setTextEditor,
+    setEditorState,
+  } = useContext(EditorContext);
 
   //useEffect
   useEffect(() => {
-    let editor = new EditorJs({
-      holderId:"textEditor",
-      data:'',
-      tools:tools,
-      placeholder: "Let's write it down "
-    })
-  }, [])
+    setTextEditor(
+      new EditorJs({
+        holderId: "textEditor",
+        data: "",
+        tools: tools,
+        placeholder: "Let's write it down ",
+      })
+    );
+  }, []);
 
-  
   const handleBannerUpload = (e) => {
     let img = e.target.files[0];
     // console.log(img);
@@ -36,8 +43,7 @@ const BlogEditor = () => {
           if (url) {
             toast.dismiss(loadingToast);
             toast.success("Uploaded");
-          
-            setBlog({...blog, banner:url})
+            setBlog({ ...blog, banner: url });
           }
         })
         .catch((err) => {
@@ -62,13 +68,39 @@ const BlogEditor = () => {
     input.style.height = "auto";
     input.style.height = input.scrollHeight + "px";
 
-    setBlog({...blog, title: input.value})
+    setBlog({ ...blog, title: input.value });
   };
 
   const handleErrorImg = (e) => {
     let img = e.target;
     img.src = defaultBanner;
-  }
+  };
+
+  const handlePublishEvent = () => {
+    if(!banner.length) {
+      return toast.error('Add Blog Banner For Publis The Blog')
+    };
+
+    if(!title.length) {
+      return toast.error('Add Blog Title To Publish');
+    };
+
+    if (textEditor.isReady) {
+      console.log(textEditor.isReady);
+      textEditor.save().then((data) => {
+        if (data.blocks.length) {
+          setBlog({ ...blog, content: data });
+          setEditorState("publish");
+        } else {
+          return toast.error("Add Content to Publish The Blog");
+        }
+      })
+      .cath((err) => {
+        console.log(err);
+        
+      })
+    }
+  };
 
   return (
     <>
@@ -76,10 +108,14 @@ const BlogEditor = () => {
         <Link to="/" className="flex-none w-10">
           <img src={logo} />
         </Link>
-        <p className="max-md:hidden text-black line-clamp-1 w-full">{title.length ? title : "New Blog" }</p>
+        <p className="max-md:hidden text-black line-clamp-1 w-full">
+          {title.length ? title : "New Blog"}
+        </p>
 
         <div className="flex gap-4 ml-auto">
-          <button className="btn-dark py-2">publish</button>
+          <button className="btn-dark py-2" onClick={handlePublishEvent}>
+            publish
+          </button>
           <button className="btn-light py-2">Save Draft</button>
         </div>
       </nav>
@@ -90,11 +126,7 @@ const BlogEditor = () => {
           <div className="mx-auto max-w-[900px] w-full">
             <div className="relative aspect-video hover:opacity-80  bg-white border-4 border-grey">
               <label htmlFor="uploadBanner">
-                <img 
-                 src={banner} 
-                 className="z-20"
-                 onError={handleErrorImg} 
-                />
+                <img src={banner} className="z-20" onError={handleErrorImg} />
                 <input
                   type="file"
                   id="uploadBanner"
@@ -112,10 +144,9 @@ const BlogEditor = () => {
               onChange={handleTitleChange}
             ></textarea>
 
-            <hr className="w-full opacity-20 my-5"/>
+            <hr className="w-full opacity-20 my-5" />
 
             <div id="textEditor" className="font-gelasio"></div>
-
           </div>
         </section>
       </AnimationWrapper>
