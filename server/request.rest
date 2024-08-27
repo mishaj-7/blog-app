@@ -1,3 +1,26 @@
 
 
-GET http://localhost:3000/get-upload-url
+
+POST http://localhost:3000/create-blog
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2Y2RlZWM4OTJhNDA4N2VhNGM0OTlmNCIsImlhdCI6MTcyNDc3MjA0MH0.ev2ThHOe2J6LqaSObIUKVYLuNDVtruSBtq69zQ2Xu1E
+
+{
+   "title":"test title @ dfhij43 $4 64 343",
+   "banner":"https://example.com/imgae-url",
+   "des":"this is short des",
+   "content": {
+    "blocks":[1,2]
+   },
+   "tags": ["tag1", "tag2"]
+
+}
+
+
+
+# {
+#   "acess_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2Y2RlZWM4OTJhNDA4N2VhNGM0OTlmNCIsImlhdCI6MTcyNDc3MjA0MH0.ev2ThHOe2J6LqaSObIUKVYLuNDVtruSBtq69zQ2Xu1E",
+#   "profile_img": "https://api.dicebear.com/6.x/fun-emoji/svg?seed=Loki",
+#   "username": "jhone",
+#   "fullname": "jhone"
+# }

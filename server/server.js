@@ -8,13 +8,13 @@ import cors from "cors";
 import admin from "firebase-admin";
 import serviceAccountKey from "./blog-app-da5d9-firebase-adminsdk-grm7u-c8b64fd3eb.json" assert { type: "json" };
 import { getAuth } from "firebase-admin/auth";
-import aws from 'aws-sdk';
+import aws from "aws-sdk";
 
 //schema
 import User from "./schema/user.js";
+import Blog from "./schema/Blog.js";
 
 const server = express();
-
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccountKey),
@@ -32,26 +32,40 @@ mongoose.connect(process.env.DB_LOCATION, {
   autoIndex: true,
 });
 
-// setting up s3 bucket 
+// setting up s3 bucket
 const s3 = new aws.S3({
-  region:'ap-south-1',
+  region: "ap-south-1",
   accessKeyId: process.env.AWS_ACCESS_KEY,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 });
 
-const generateUploadURL = async() => {
-
+const generateUploadURL = async () => {
   const date = new Date();
   const imageName = `${nanoid()}-${date.getTime()}.jpeg`;
 
- return await s3.getSignedUrlPromise('putObject',{
-    Bucket: 'blog-app-fullstack',
+  return await s3.getSignedUrlPromise("putObject", {
+    Bucket: "blog-app-fullstack",
     Key: imageName,
     Expires: 1000,
-    ContentType: "image/jpeg"
-  })
+    ContentType: "image/jpeg",
+  });
+};
 
+const verifyJWT = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (token == null) {
+    return res.status(401).json({ error: "No Access Token" });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: "Access token invalid" });
+    }
+    req.user = user.id;
+    next();
+  });
 };
 
 const formatDatatoSend = (user) => {
@@ -80,14 +94,14 @@ const generateUsername = async (email) => {
 };
 
 // upload image url route
-server.get('/get-upload-url', (req, res) => {
+server.get("/get-upload-url", (req, res) => {
   generateUploadURL()
-  .then(url => res.status(200).json({uploadURL: url}))
-  .catch(err => {
-    console.log(err.message);
-    return res.status(500).json({error:err.message});
-  });
-})
+    .then((url) => res.status(200).json({ uploadURL: url }))
+    .catch((err) => {
+      console.log(err.message);
+      return res.status(500).json({ error: err.message });
+    });
+});
 
 server.post("/signup", (req, res) => {
   let { fullname, email, password } = req.body;
@@ -158,7 +172,9 @@ server.post("/signin", (req, res) => {
           }
         });
       } else {
-        return res.status(403).json({"error":"accout already exist with google"});
+        return res
+          .status(403)
+          .json({ error: "accout already exist with google" });
       }
     })
     .catch((err) => {
@@ -192,12 +208,9 @@ server.post("/google-auth", async (req, res) => {
       if (user) {
         // login user if alredy exist
         if (!user.google_auth) {
-          return res
-            .status(403)
-            .json({
-              error:
-                "google account aleardy exist login with mail and password",
-            });
+          return res.status(403).json({
+            error: "google account aleardy exist login with mail and password",
+          });
         }
       } else {
         // singn up with google
@@ -230,6 +243,86 @@ server.post("/google-auth", async (req, res) => {
         .status(500)
         .json({ error: "faild to authenticate with google account" });
     });
+});
+
+server.post("/create-blog", verifyJWT, (req, res) => {
+  let authorId = req.user;
+
+  let { title, des, banner, tags, content, draft } = req.body;
+
+  if (!title.length) {
+    return res
+      .status(403)
+      .json({ error: "you must provide a title to publish the blog" });
+  }
+
+  if (!des.length || des.length > 200) {
+    return res
+      .status(403)
+      .json({ error: "you must provide blog description under 200 charecter" });
+  }
+
+  if (!banner.length) {
+    return res
+      .status(403)
+      .json({ error: "You must provide a blog banner to publish" });
+  }
+
+  if (!content.blocks.length) {
+    return res
+      .status(403)
+      .json({ error: "there must be a some blog content to publis the blog" });
+  }
+
+  if (!tags.length || tags.length > 10) {
+    return res
+      .status(403)
+      .json({ error: "provide tag inorder to publish maximum 10 tags" });
+  }
+
+  tags = tags.map((tag) => tag.toLowerCase());
+
+  let blog_id =
+    title
+      .replace(/[^a-zA-z0-9]/g, " ")
+      .replace(/\s+/g, "-")
+      .trim() + nanoid();
+
+  let blog = new Blog({
+    title,
+    des,
+    banner,
+    content,
+    tags,
+    author: authorId,
+    blog_id,
+    draft: Boolean(draft),
+  });
+
+  blog.save().then((blog) => {
+    let incrementVal = draft ? 0 : 1;
+
+    User.findOneAndUpdate(
+      { _id: authorId },
+      {
+        $inc: { "account_info.total_posts": incrementVal },
+        $push: { blogs: blog._id },
+      }
+    )
+      .then((user) => {
+        return res.status(200).json({ id: blog.blog_id });
+      })
+      .catch((err) => {
+        return res
+          .status(500)
+          .json({ error: "Failed to update total post number" });
+      });
+  })
+  .catch(err => {
+    return res.status(500).json({error: err.message})
+  })
+
+
 });
 
 server.listen(process.env.PORT, () => {
