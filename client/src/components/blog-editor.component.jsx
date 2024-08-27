@@ -24,7 +24,7 @@ const BlogEditor = () => {
     setTextEditor(
       new EditorJs({
         holderId: "textEditor",
-        data: "",
+        data: content,
         tools: tools,
         placeholder: "Let's write it down ",
       })
@@ -77,30 +77,30 @@ const BlogEditor = () => {
   };
 
   const handlePublishEvent = () => {
-    if(!banner.length) {
-      return toast.error('Add Blog Banner For Publis The Blog')
-    };
+    // if(!banner.length) {
+    //   return toast.error('Add Blog Banner For Publis The Blog')
+    // };
 
-    if(!title.length) {
-      return toast.error('Add Blog Title To Publish');
-    };
+    // if(!title.length) {
+    //   return toast.error('Add Blog Title To Publish');
+    // };
 
-    if (textEditor.isReady) {
+    // if (textEditor.isReady) {
       console.log(textEditor.isReady);
       textEditor.save().then((data) => {
-        if (data.blocks.length) {
+        // if (data.blocks.length) {
           setBlog({ ...blog, content: data });
           setEditorState("publish");
-        } else {
-          return toast.error("Add Content to Publish The Blog");
-        }
+        // } else {
+        //   return toast.error("Add Content to Publish The Blog");
+        // }
       })
       .cath((err) => {
         console.log(err);
         
       })
     }
-  };
+  // };
 
   return (
     <>
@@ -139,6 +139,7 @@ const BlogEditor = () => {
 
             <textarea
               placeholder="Blog Title"
+              defaultValue={title}
               className="text-4xl font-medium w-full h-20 outline-none resize-none mt-10 leading-tight placeholder:opacity-40"
               onKeyDown={handleTitleKeyDown}
               onChange={handleTitleChange}
