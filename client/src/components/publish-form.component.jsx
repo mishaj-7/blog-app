@@ -3,17 +3,25 @@ import AnimationWrapper from "../common/page-animation";
 import { useContext } from "react";
 import { EditorContext } from "../Pages/editor.pages";
 import Tag from "./tags.component";
+import axios from "axios";
+import { UserContext } from "../App";
+import { useNavigate } from "react-router-dom";
 
 const PublishFormComponent = () => {
   let characterLimit = 200;
   let tagLimit = 10;
 
   let {
-    blog: { banner, title, tags, des },
+    blog: { banner, title, tags, des, content },
     setEditorState,
     blog,
     setBlog,
   } = useContext(EditorContext);
+
+  let { userAuth: {acess_token} } = useContext(UserContext);
+  console.log(acess_token);
+
+  let navigate = useNavigate();
 
   const handleCloseEvent = () => {
     setEditorState("editor");
@@ -54,6 +62,59 @@ const PublishFormComponent = () => {
       e.target.value = '';
     }
   }; 
+
+  const publishBlog = (e) => {
+
+    if(e.target.className.includes("disable")) {
+      return;
+    } // prevent submiting data multiple time
+
+    if(!title.length){
+      return toast.error("Write blog title before publish")
+    }
+
+    if(!des.length || des.length > characterLimit) {
+      return toast.error(`write a description for the blog ${characterLimit} `)
+    }
+
+    if(!tags.length){
+      return toast.error("Enter atleast 1 tag to rank the blog")
+    }
+
+    let loadingToast = toast.loading("Publishing...");
+
+    e.target.classList.add('disable');
+
+    let blogObj = {
+      title, banner, des, content, tags, draft: false
+    }
+
+    axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/create-blog",blogObj, {
+      headers:{
+        'Authorization': `Bearer ${acess_token}`
+      }
+    })
+    .then(() =>{
+      e.target.classList.remove('disable');
+
+      toast.dismiss(loadingToast);
+      toast.success("Your blog is Published")
+
+      setTimeout(() => {
+        navigate('/')
+      }, 500);
+
+    })
+    .catch(({response}) => {
+      e.target.classList.remove('disable')
+      toast.dismiss(loadingToast);
+
+      return toast.error(response.data.error);
+    }) 
+
+    
+
+  }
 
   return (
     <AnimationWrapper>
@@ -127,7 +188,7 @@ const PublishFormComponent = () => {
           </div>
           <p className="mt-1 mb-4 text-dark-grey text-right"> { tagLimit - tags.length} Tags left </p>
 
-          <button className="btn-dark px-8 ">Publish</button>
+          <button className="btn-dark px-8 " onClick={publishBlog}>Publish</button>
 
         </div>
       </section>

@@ -77,30 +77,30 @@ const BlogEditor = () => {
   };
 
   const handlePublishEvent = () => {
-    // if(!banner.length) {
-    //   return toast.error('Add Blog Banner For Publis The Blog')
-    // };
+    if(!banner.length) {
+      return toast.error('Add Blog Banner For Publis The Blog')
+    };
 
-    // if(!title.length) {
-    //   return toast.error('Add Blog Title To Publish');
-    // };
+    if(!title.length) {
+      return toast.error('Add Blog Title To Publish');
+    };
 
-    // if (textEditor.isReady) {
+    if (textEditor.isReady) {
       console.log(textEditor.isReady);
       textEditor.save().then((data) => {
-        // if (data.blocks.length) {
+        if (data.blocks.length) {
           setBlog({ ...blog, content: data });
           setEditorState("publish");
-        // } else {
-        //   return toast.error("Add Content to Publish The Blog");
-        // }
+        } else {
+          return toast.error("Add Content to Publish The Blog");
+        }
       })
-      .cath((err) => {
+      .catch((err) => {
         console.log(err);
         
       })
     }
-  // };
+  };
 
   return (
     <>
